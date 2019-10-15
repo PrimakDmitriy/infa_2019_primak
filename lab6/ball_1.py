@@ -18,12 +18,14 @@ def sign(x):
 		return 0
 
 def new_ball():
-	global ball_dx, ball_dy, ball_x, ball_y, ball_r, ball_tags
+	global ball_dx, ball_dy, ball_x, ball_y, ball_r, ball_tags, x, y
 	global pause_time, moving_speed
-	dx = int(rnd(6,10) * moving_speed)
-	dy = int(rnd(6,10) * moving_speed)
-	canv.delete('ball')
+	ball_dx.append(int(rnd(6,10) * moving_speed))
+	ball_dy.append(int(rnd(6,10) * moving_speed))
+	ball_x.append(x)
+	ball_y.append(y)
 	r = rnd(30,50)
+	canv.delete('ball')
 	
 	canv.create_oval(x-r,y-r,x+r,y+r,fill = choice(colors), width=0, tag='ball')
 	root.after(int(pause_time),new_ball)
