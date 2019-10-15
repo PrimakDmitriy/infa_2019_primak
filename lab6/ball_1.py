@@ -18,83 +18,146 @@ def sign(x):
 		return 0
 
 def new_ball():
-	global ball_dx, ball_dy, ball_x, ball_y, ball_r, ball_tags, x, y
-	global pause_time, moving_speed
-	ball_dx.append(int(rnd(6,10) * moving_speed))
-	ball_dy.append(int(rnd(6,10) * moving_speed))
-	ball_x.append(x)
-	ball_y.append(y)
-	r = rnd(30,50)
-	canv.delete('ball')
+        global ball_dx, ball_dy, ball_x, ball_y, ball_r, x, y
+        global pause_time, moving_speed
+        dx = int(rnd(6,10) * moving_speed)
+        dy = int(rnd(6,10) * moving_speed)
+        r = rnd(30,50)
+        canv.create_oval( x-r, y-r, x+r, y+r, fill = choice(colors), width=0, tag='ball'+str(len(ball_x)) )
+        ball_dx.append(dx)
+        ball_dy.append(dy)
+        ball_x.append(x - 100)
+        ball_y.append(y)
+        ball_r.append(r)
+
+        root.after(int(pause_time),new_ball)
+
+def new_triangle():
+        global triangle_dx, triangle_dy, triangle_x, triangle_y, triangle_r, x, y
+        global pause_time, moving_speed
+        dx = int(rnd(6,10) * moving_speed)
+        dy = int(rnd(6,10) * moving_speed)
+        r = rnd(30,50)
+        canv.create_polygon( (x, y-r), (x + int(r*0.866), y + r//2), (x - int(r*0.866), y + r//2),\
+                             fill = choice(colors), width=0, tag='triangle'+str(len(triangle_x)) )
+        triangle_dx.append(dx)
+        triangle_dy.append(dy)
+        triangle_x.append(x + 100)
+        triangle_y.append(y)
+        triangle_r.append(r)
 	
-	canv.create_oval(x-r,y-r,x+r,y+r,fill = choice(colors), width=0, tag='ball')
-	root.after(int(pause_time),new_ball)
-	
+        root.after(int(pause_time),new_triangle)
+        
 def time_and_speed():
-	global pause_time, moving_speed
-	if moving_speed < 10:
-		moving_speed *= 1.01
-	else:
-		moving_speed *= 1.001
-	if pause_time >= 2000:
-		pause_time /= 1.01
-	elif pause_time >=1000:
-		pause_time /= 1.005
-	elif pause_time >= 700:
-		pause_time /= 1.002
-	elif pause_time >=500:
-		pause_time /= 1.001
-	elif pause_time >=300:
-		pause_time /= 1.0001
-	else:
-		pause_time /= 1.000001
+        global pause_time, moving_speed
+        if moving_speed < 10:
+                moving_speed *= 1.01
+        else:
+                moving_speed *= 1.001
+        root.after(int(pause_time), time_and_speed)
+
+def delete_ball(i):
+        ball_dx.pop(i)
+        ball_dy.pop(i)
+        ball_x.pop(i)
+        ball_y.pop(i)
+        ball_r.pop(i)
+
+def delete_triangle(i):
+        triangle_dx.pop(i)
+        triangle_dy.pop(i)
+        triangle_x.pop(i)
+        triangle_y.pop(i)
+        triangle_r.pop(i)
 
 def click(event):
 	global score, errors
 	x_click = event.x
 	y_click = event.y
-	if (x - x_click) ** 2 + (y - y_click) ** 2 < (r + 20) ** 2:
-		score += 10 ** 6 / r ** 2
-	else:
-		errors += 1
-	canv.delete('ball')
-	canv.delete('text')
-	canv.create_text(750, 20, text="Score: %s" % (int(score)), justify=RIGHT, font="Verdana 14", tag='text')
-	canv.create_text(750, 40, text="Errors: %s" % (errors), justify=RIGHT, font="Verdana 14", tag='text')
+	clicked = 0
+	i = 0
+	while i < len(ball_x):
+		if (ball_x[i] - x_click) ** 2 + (ball_y[i] - y_click) ** 2 < ball_r[i] ** 2:
+                        score += 10 ** 6 / ball_r[i] ** 2
+                        if clicked >= 1:
+                                score += 1000 * clicked
+                        clicked += 1
+                        canv.delete('ball'+str(i))
+                        delete_ball(i)
+		else:
+			i += 1
+	i = 0
+	while i < len(triangle_x):
+		if (triangle_x[i] - x_click) ** 2 + (triangle_y[i] - y_click) ** 2 < triangle_r[i] ** 2 / 2:
+			score += 10 ** 6 / triangle_r[i] ** 2 * 2
+			if clicked >= 1:
+				score += 2000 * clicked
+			clicked += 1
+			canv.delete('triangle'+str(i))
+			delete_triangle(i)
+		else:
+			i +=1
+	if clicked == 0:
+                errors += 1
 	
-def update():
-	global dx, dy, x, y, r
-	if (x + r >= 790) or (x - r <= 10):
-		dx *= -1
-	if (y + r >= 590) or (y - r <= 10):
-		dy *= -1
-	canv.move('ball', dx, dy)
-	x += dx
-	y += dy
-	root.after(50,update)
+	canv.delete('text')
+	canv.create_text(720, 20, text="Score: %s" % (int(score)), justify=RIGHT, font="Verdana 14", tag='text')
+	canv.create_text(720, 40, text="Errors: %s" % (errors), justify=RIGHT, font="Verdana 14", tag='text')
+	canv.create_text(720, 60, text="Balls: %s" % (len(ball_x)), justify=RIGHT, font="Verdana 14", tag='text')
+	canv.create_text(720, 80, text="Triangles: %s" % (len(triangle_x)), justify=RIGHT, font="Verdana 14", tag='text')
+	if errors == 5:
+		canv.delete(all)
+		canv.create_text(x, y, text="Game Over. Score: %s" % (int(score)), justify=CENTER, font="Verdana 14", tag='text')
+		time.sleep(5)
+		exit()
 
-ball_tags = []    #lists
-ball_dx = []
+
+def update():
+        global ball_x, ball_y, ball_r, ball_dx, ball_dy,\
+                triangle_x, triangle_y, triangle_r, triangle_dx, triangle_dy
+        for i in range(int(len(ball_x))):
+                if ball_x[i] + ball_r[i] >= 790 or ball_x[i] - ball_r[i] <= 10:
+                        ball_dx[i] *= -1
+                if ball_y[i] + ball_r[i] >= 590 or ball_y[i] - ball_r[i] <= 10:
+                        ball_dy[i] *= -1
+                canv.move('ball'+str(i), ball_dx[i], ball_dy[i])
+                ball_x[i] += ball_dx[i]
+                ball_y[i] += ball_dy[i]
+        for i in range(int(len(triangle_x))):
+                if triangle_x[i] + triangle_r[i] >= 790 or triangle_x[i] - triangle_r[i] <= 10:
+                        triangle_dx[i] *= -1
+                if triangle_y[i] + triangle_r[i] >= 590 or triangle_y[i] - triangle_r[i] <= 10:
+                        triangle_dy[i] *= -1
+                canv.move('triangle'+str(i), triangle_dx[i], triangle_dy[i])
+                triangle_x[i] += triangle_dx[i]
+                triangle_y[i] += triangle_dy[i]
+        root.after(50,update)
+
+ball_dx = []   #lists
 ball_dy = []
 ball_x = []
 ball_y = []
 ball_r = []
-triangle_tags = []
 triangle_dx = []
 triangle_dy = []
+triangle_x = []
+triangle_y = []
+triangle_r = []
+
 
 score = 0
 errors = 0
-pause_time = 10000
+pause_time = 2000
 moving_speed = 1
 x = 400
 y = 300
 dx = 0
 dy = 0
 
-canv.create_text(750, 20, text="Score: %s" % (score), justify=RIGHT, font="Verdana 14", tag='text')
-canv.create_text(750, 40, text="Errors: %s" % (errors), justify=RIGHT, font="Verdana 14", tag='text')
+canv.create_text(720, 20, text="Score: %s" % (score), justify=RIGHT, font="Verdana 14", tag='text')
+canv.create_text(720, 40, text="Errors: %s" % (errors), justify=RIGHT, font="Verdana 14", tag='text')
 new_ball()
+new_triangle()
 update()
 canv.bind('<Button-1>', click)
 mainloop()
