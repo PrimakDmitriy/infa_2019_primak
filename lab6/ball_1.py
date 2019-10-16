@@ -62,7 +62,7 @@ def new_triangle():
 
 def time_and_speed():
     global pause_time, moving_speed
-    if moving_speed < 10:
+    if moving_speed < 1:
         moving_speed *= 1.01
     else:
         moving_speed *= 1.001
@@ -173,7 +173,7 @@ score = 0
 errors = 0
 maxerr = 5
 pause_time = 5000
-moving_speed = 1
+moving_speed = 0.3
 x = 400
 y = 300
 dx = 0
