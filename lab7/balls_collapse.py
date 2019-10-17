@@ -9,24 +9,45 @@ canv.pack(fill=BOTH,expand=1)
 
 colors = ['red','orange','yellow','green','blue','cyan','black','magenta','violet','grey']
 
+class Vector:
+	def __init__(self, x = 0, y = 0):
+		self.x = x
+		self.y = y
+
+class Ball:
+	def __init__(self, x, y, r, ux, uy, ax, ay, col, tagg):
+		self.coords = Vector(x, y)
+		self.radius = r
+		self.speed = Vector(ux, uy)
+		self.accel = Vector(ax, ay)
+		self.color = col
+		self.tag = tagg
+		canv.create_oval( x-r, y-r, x+r, y+r, fill = col, width=0, tag=tagg)
+	
+	def move(self):
+		canv.move(str(self.tag), self.speed.x, self.speed.y)
+		self.coords.x += self.speed.x
+		self.coords.y += self.speed.y
+	
+	def reflect(self, canv_width, canv_height):
+		if self.coords.x + self.radius >= canv_width or self.coords.x - self.radius <= 0:
+			self.speed.x *= -1
+		if self.coords.y + self.radius >= canv_width or self.coords.y - self.radius <= 0:
+			self.speed.y *= -1
+
 def new_ball():
     canv.delete('text1')
     global maxelem, tagcount
-    global ball_dx, ball_dy, ball_x, ball_y, ball_r, x, y
-    if len(ball_x) < maxelem:
+    global x, y, balls
+    if len(balls) < maxelem:
         global pause_time
-        dx = int(rnd(-10,10))
-        dy = int(rnd(-10,10))
+        ux = int(rnd(-10,10))
+        uy = int(rnd(-10,10))
         r = rnd(30,50)
         tagball = 'ball'+ str(tagcount)
         tagcount += 1
-        canv.create_oval( x+100-r, y-r, x+100+r, y+r, fill = choice(colors), width=0, tag=tagball )
-        ball_dx.append(dx)
-        ball_dy.append(dy)
-        ball_x.append(x + 100)
-        ball_y.append(y)
-        ball_r.append(r)
-        ball_tags.append(tagball)
+        col = choice(colors)
+        balls.append(Ball(x, y, r, ux, uy, 0, 0, col, tagball))
     root.after(int(pause_time),new_ball)
 
 def time_and_speed():
@@ -38,52 +59,34 @@ def time_and_speed():
 def stop_game():
     exit()
 
-def delete_ball(i):
-    ball_dx.pop(i)
-    ball_dy.pop(i)
-    ball_x.pop(i)
-    ball_y.pop(i)
-    ball_r.pop(i)
-    ball_tags.pop(i)
-
 def click(event):
     x_click = event.x
     y_click = event.y
     clicked = 0
     i = 0
-    while i < len(ball_x):
-        if (ball_x[i] - x_click) ** 2 + (ball_y[i] - y_click) ** 2 < ball_r[i] ** 2:
-            if clicked >= 1:
-                canv.create_text(720, 100, text="Cool!", justify=RIGHT, font="Verdana 14", tag='text1')
+    while i < len(balls):
+        if (balls[i].coords.x - x_click) ** 2 + (balls[i].coords.y - y_click) ** 2 < balls[i].radius ** 2:
             clicked += 1
-            canv.delete(str(ball_tags[i]))
-            delete_ball(i)
+            canv.delete(str(balls[i].tag))
+            balls.pop(i)
         else:
             i += 1
 
 
 def update():
-    global ball_x, ball_y, ball_r, ball_dx, ball_dy
-    for i in range(int(len(ball_x))):
-        if ball_x[i] + ball_r[i] >= 790 or ball_x[i] - ball_r[i] <= 10:
-            ball_dx[i] *= -1
-        if ball_y[i] + ball_r[i] >= 590 or ball_y[i] - ball_r[i] <= 10:
-            ball_dy[i] *= -1
-        canv.move(str(ball_tags[i]), ball_dx[i], ball_dy[i])
-        ball_x[i] += ball_dx[i]
-        ball_y[i] += ball_dy[i]
+    global balls
+    for i in range(int(len(balls))):
+        balls[i].reflect(2 * x, 2 * y)
+        balls[i].move()
+    canv.delete('text')
+    canv.create_text(720, 20, text="Balls: %s" % (len(balls)), justify=RIGHT, font="Verdana 14", tag='text')
     root.after(50,update)
 
-ball_dx = []   #lists
-ball_dy = []
-ball_x = []
-ball_y = []
-ball_r = []
-ball_tags = []
-tagcount = 0
+balls = []
 
 pause_time = 3000
 maxelem = 12
+tagcount = 0
 x = 400
 y = 300
 
