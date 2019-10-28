@@ -12,7 +12,7 @@ canv = tk.Canvas(root, bg='white')
 canv.pack(fill=tk.BOTH, expand=1)
 
 
-class ball():
+class Ball():
     def __init__(self, x=40, y=450):
         """ Конструктор класса ball
 
@@ -64,7 +64,7 @@ class ball():
         return ((self.x - obj.x) ** 2 + (self.y - obj.y) ** 2) ** 0.5 < self.r + obj.r
 
 
-class gun():
+class Gun():
     def __init__(self):
         self.f2_power = 10
         self.f2_on = 0
@@ -82,7 +82,7 @@ class gun():
         """
         global balls, bullet
         bullet += 1
-        new_ball = ball()
+        new_ball = Ball()
         new_ball.r += 5
         self.an = math.atan((event.y-new_ball.y) / (event.x-new_ball.x))
         new_ball.vx = self.f2_power * math.cos(self.an)
@@ -113,7 +113,7 @@ class gun():
             canv.itemconfig(self.id, fill='black')
 
 
-class target():
+class Target():
     def __init__(self):
         self.live = 1
         # FIXME: don't work!!! How to call this functions when object is created?
@@ -129,14 +129,14 @@ class target():
         """Попадание шарика в цель."""
         canv.coords(self.id, -10, -10, -10, -10)
     
-    '''def move(self, speed = 1):
+    def move(self, speed = 1):
         if self.x <= 350 or self.x + self.r >= 800:
             speed *= -1
         canv.move(self.id, speed, 0)
-        root.after(20, move(speed))'''
+        root.after(20, move(speed))
 
 
-g1 = gun()
+g1 = Gun()
 screen1 = canv.create_text(400, 300, text='', font='28')
 score = 0
 score_screen = canv.create_text(30, 30, text='Score: ' + str(score), justify = 'left')
@@ -146,8 +146,8 @@ def stop_game():
 
 def new_game(event=''):
     global t1, t2, screen1, g1, balls, bullet, score
-    t1 = target()
-    t2 = target()
+    t1 = Target()
+    t2 = Target()
     balls = []
     bullet = 0
     canv.itemconfig(screen1, text='')
@@ -157,8 +157,8 @@ def new_game(event=''):
 
     t1.live = 1
     t2.live = 1
-    #t1.move(0.01 * t1.r ** 2)
-    #t2.move(0.01 * t2.r ** 2)
+    t1.move(0.01 * t1.r ** 2)
+    t2.move(0.01 * t2.r ** 2)
     while t1.live or t2.live or balls:
         if bullet > 10:
             over = 1
@@ -194,7 +194,7 @@ def new_game(event=''):
         time.sleep(0.03)
         g1.targetting()
         g1.power_up()
-    canv.delete(gun)
+    canv.delete(Gun)
     canv.delete(t1.id)
     canv.delete(t2.id)
     for bb in balls:
@@ -204,7 +204,7 @@ def new_game(event=''):
     else:
         canv.itemconfig(screen1, text = 'Игра окончена. Очки: %s' %score)
         time.sleep(2)
-        #stop_game()
+        stop_game()
 
 
 new_game()
