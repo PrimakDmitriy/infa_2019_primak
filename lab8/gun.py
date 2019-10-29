@@ -15,7 +15,6 @@ canv.pack(fill=tk.BOTH, expand=1)
 class Ball():
     def __init__(self, x=40, y=450):
         """ Конструктор класса ball
-
         Args:
         x - начальное положение мяча по горизонтали
         y - начальное положение мяча по вертикали
@@ -38,7 +37,6 @@ class Ball():
 
     def move(self, obj):
         """Переместить мяч по прошествии единицы времени.
-
         Метод описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения
         self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
         и стен по краям окна (размер окна 800х600).
@@ -47,14 +45,13 @@ class Ball():
         self.x += self.vx
         self.y += self.vy
         self.vy += self.ay
-        if self.y >= 590 - self.r:
+        if self.y >= 580 - self.r:
             self.vy = 0
-            self.y = 590 - self.r
+            self.y = 580 - self.r
         canv.move(self.id, self.vx, self.vy)
 
     def hittest(self, obj):
         """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
-
         Args:
             obj: Обьект, с которым проверяется столкновение.
         Returns:
@@ -76,7 +73,6 @@ class Gun():
 
     def fire2_end(self, event):
         """Выстрел мячом.
-
         Происходит при отпускании кнопки мыши.
         Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
         """
@@ -129,11 +125,19 @@ class Target():
         """Попадание шарика в цель."""
         canv.coords(self.id, -10, -10, -10, -10)
     
-    def move(self, speed = 1):
-        if self.x <= 350 or self.x + self.r >= 800:
-            speed *= -1
-        canv.move(self.id, speed, 0)
-        root.after(20, move(speed))
+    def move(self):
+        global t1, t2, t1_speed, t2_speed
+        if self.id == t1.id:
+            if self.x - self.r <= 350 or self.x + self.r >= 800:
+                t1_speed *= -1
+            canv.move(self.id, t1_speed, 0)
+            self.x += t1_speed
+        if self.id == t2.id:
+            if self.x - self.r <= 350 or self.x + self.r >= 800:
+                t2_speed *= -1
+            canv.move(self.id, t2_speed, 0)
+            self.x += t2_speed
+        root.after(20, self.move)
 
 
 g1 = Gun()
@@ -146,8 +150,12 @@ def stop_game():
 
 def new_game(event=''):
     global t1, t2, screen1, g1, balls, bullet, score
+    global t1, t2
     t1 = Target()
     t2 = Target()
+    global t1_speed, t2_speed
+    t1_speed = int(0.005 * t1.r ** 2)
+    t2_speed = int(0.005 * t2.r ** 2)
     balls = []
     bullet = 0
     canv.itemconfig(screen1, text='')
@@ -157,8 +165,8 @@ def new_game(event=''):
 
     t1.live = 1
     t2.live = 1
-    t1.move(0.01 * t1.r ** 2)
-    t2.move(0.01 * t2.r ** 2)
+    t1.move()
+    t2.move()
     while t1.live or t2.live or balls:
         if bullet > 10:
             over = 1
