@@ -47,7 +47,9 @@ class Ball():
         self.vy += self.ay
         if self.y >= 580 - self.r:
             self.vy = 0
-            self.y = 580 - self.r
+            self.vx /= 1.003
+        if self.x > 800 - self.r or self.x < self.r:
+            self.vx *= -1
         canv.move(self.id, self.vx, self.vy)
 
     def hittest(self, obj):
